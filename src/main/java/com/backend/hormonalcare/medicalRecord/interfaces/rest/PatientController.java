@@ -27,11 +27,13 @@ public class PatientController {
     private final PatientCommandService patientCommandService;
     private final PatientQueryService patientQueryService;
     private final SupabaseStorageServiceTypeUser supabaseStorageService;
+    private final ExternalProfileService externalProfileService;
 
-    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService, SupabaseStorageServiceTypeUser supabaseStorageService) {
+    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService, SupabaseStorageServiceTypeUser supabaseStorageService, ExternalProfileService externalProfileService) {
         this.patientCommandService = patientCommandService;
         this.patientQueryService = patientQueryService;
         this.supabaseStorageService = supabaseStorageService;
+        this.externalProfileService = externalProfileService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -183,6 +185,16 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
         return ResponseEntity.ok(patientResource);
     }
 
+    @GetMapping
+    public ResponseEntity<List<PatientWithProfileResource>> getAllPatients() {
+        var patients = patientQueryService.handle(new GetAllPatientsQuery());
+        var patientWithProfileResources = patients.stream().map(patient -> {
+            var profileDetailsOptional = externalProfileService.fetchProfileDetails(patient.getProfileId());
+            var profileDetails = profileDetailsOptional.orElse(null);
+            return PatientWithProfileResourceFromEntityAssembler.toResourceFromEntity(patient, profileDetails);
+        }).toList();
+        return ResponseEntity.ok(patientWithProfileResources);
+    }
 }
 
 

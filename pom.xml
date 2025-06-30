@@ -14,7 +14,7 @@
     <name>hormonal-care-backend</name>
     <description>hormonal-care-backend</description>
     <properties>
-        <java.version>16</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -114,6 +114,12 @@
             <version>0.4.14</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provide</scope>
+        </dependency>
         <!-- Apache Tika Dependency -->
         <dependency>
             <groupId>org.apache.tika</groupId>
@@ -153,6 +159,8 @@
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.30</version>
+                            <scope>provide</scope>
                         </exclude>
                     </excludes>
                 </configuration>
