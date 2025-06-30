@@ -1,6 +1,7 @@
 package com.backend.hormonalcare.profile.interfaces.rest;
 
 import com.backend.hormonalcare.profile.domain.model.queries.GetProfileByIdQuery;
+import com.backend.hormonalcare.profile.domain.model.queries.GetProfileByNameQuery;
 import com.backend.hormonalcare.profile.domain.model.queries.GetProfileByUserIdQuery;
 import com.backend.hormonalcare.profile.domain.services.ProfileCommandService;
 import com.backend.hormonalcare.profile.domain.services.ProfileQueryService;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+
 
 @RestController
 @RequestMapping(value = "/api/v1/profile", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,15 +86,29 @@ public class ProfileController {
     }
 
     @PostMapping("/test")
-public ResponseEntity<String> testEndpoint() {
-    return ResponseEntity.ok("Endpoint funcionando correctamente");
-}
+
+
+
+
+    public ResponseEntity<String> testEndpoint() {
+        return ResponseEntity.ok("Endpoint funcionando correctamente");
+    }
 
     @GetMapping("/userId/exists/{userId}")
     public ResponseEntity<Boolean> doesProfileExistByUserId(@PathVariable Long userId) {
         var getProfileByUserIdQuery = new GetProfileByUserIdQuery(userId);
         var doesProfileExist = profileQueryService.doesProfileExist(getProfileByUserIdQuery);
         return ResponseEntity.ok(doesProfileExist);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProfileResource>> getProfilesByName(@RequestParam String name) {
+        var query = new GetProfileByNameQuery(name);
+        var profiles = profileQueryService.handle(query);
+        var resources = profiles.stream()
+                .map(ProfileResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @GetMapping("/userId/{userId}")

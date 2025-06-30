@@ -27,13 +27,23 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
     }
 
     @Override
-    public Optional<Profile> handle(GetProfileByNameQuery query) {
-        return profileRepository.findByName(query.name());
+    public List<Profile> findByName_FirstNameContainingIgnoreCase(String firstName) {
+        return profileRepository.findByName_FirstNameContainingIgnoreCase(firstName);
     }
 
     @Override
     public Optional<Profile> handle(GetProfileByPhoneNumberQuery query) {
         return profileRepository.findByPhoneNumber(query.phoneNumber());
+    }
+
+    @Override
+    public List<Profile> handle(GetProfileByNameQuery query) {
+        return profileRepository.findByName_FirstNameContainingIgnoreCase(query.name());
+    }
+
+    @Override
+    public List<Profile> handle(GetProfileByLastNameQuery query) {
+        return profileRepository.findByName_LastNameContainingIgnoreCase(query.lastName());
     }
 
     @Override
