@@ -176,6 +176,31 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
         return ResponseEntity.ok(patientResource);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<PatientWithProfileResource>> searchPatientsByName(@RequestParam String name) {
+        var patients = patientQueryService.handle(new GetPatientsByNameQuery(name));
+        var resources = patients.stream()
+                .map(patient -> {
+                    var profileOpt = externalProfileService.fetchProfileDetails(patient.getProfileId());
+                    var profile = profileOpt.orElse(null);
+                    return new PatientWithProfileResource(
+                            patient.getId(),
+                            profile != null ? profile.getFullName() : null,
+                            profile != null ? profile.getImage() : null,
+                            profile != null ? profile.getGender() : null,
+                            profile != null ? profile.getPhoneNumber() : null,
+                            profile != null ? profile.getBirthday() : null,
+                            patient.getTypeOfBlood(),
+                            patient.getPersonalHistory() != null ? patient.getPersonalHistory().personalHistory() : null,
+                            patient.getFamilyHistory() != null ? patient.getFamilyHistory().familyHistory() : null,
+                            patient.getDoctor(),
+                            patient.getProfileId() != null ? patient.getProfileId() : null
+                    );
+                })
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
     @PutMapping("/doctor/{patientId}")
     public ResponseEntity<PatientResource> updatePatientDoctorId(@PathVariable Long patientId, @RequestBody UpdatePatientDoctorIdResource updatePatientDoctorIdResource) {
         var updatePatientDoctorIdCommand = UpdatePatientDoctorIdCommandFromResourceAssembler.toCommandFromResource(patientId, updatePatientDoctorIdResource);

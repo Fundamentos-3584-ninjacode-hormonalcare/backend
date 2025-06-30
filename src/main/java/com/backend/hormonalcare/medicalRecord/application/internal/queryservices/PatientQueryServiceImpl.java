@@ -6,9 +6,12 @@ import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
 import com.backend.hormonalcare.medicalRecord.domain.services.PatientQueryService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;
 import org.springframework.stereotype.Service;
+import com.backend.hormonalcare.medicalRecord.interfaces.dto.PatientWithProfileDetails;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 public class PatientQueryServiceImpl implements PatientQueryService {
     private final PatientRepository patientRepository;
@@ -56,6 +59,15 @@ public class PatientQueryServiceImpl implements PatientQueryService {
             });
         });
         return patients;
+    }
+
+    @Override
+    public List<Patient> handle(GetPatientsByNameQuery query) {
+        return patientRepository.findAll().stream()
+                .filter(patient -> externalProfileService.fetchProfileDetails(patient.getProfileId())
+                        .map(profile -> profile.getFullName().toLowerCase().contains(query.name().toLowerCase()))
+                        .orElse(false))
+                .collect(Collectors.toList());
     }
 }
 

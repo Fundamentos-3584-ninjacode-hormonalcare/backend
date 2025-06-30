@@ -11,6 +11,10 @@ import com.backend.hormonalcare.profile.domain.model.queries.GetProfileByPhoneNu
 import com.backend.hormonalcare.profile.domain.model.valueobjects.PhoneNumber;
 import com.backend.hormonalcare.profile.domain.services.ProfileCommandService;
 import com.backend.hormonalcare.profile.domain.services.ProfileQueryService;
+import com.backend.hormonalcare.profile.domain.model.aggregates.Profile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProfileContextFacade {
@@ -93,5 +97,22 @@ public class ProfileContextFacade {
     
         // Convertimos el objeto Birthday a una cadena en formato ISO 8601
         return profile.get().getBirthday().birthday().toString();
+    }
+
+    public List<ProfileDetails> findProfileDetailsByFirstName(String firstName) {
+        return findProfilesByFirstName(firstName).stream()
+                .map(profile -> new ProfileDetails(
+                        profile.getId(),
+                        profile.getName().firstName() + " " + profile.getName().lastName(),
+                        profile.getImage(),
+                        profile.getGender().gender(),
+                        profile.getPhoneNumber().phoneNumber(),
+                        profile.getBirthday().birthday().toString()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<Profile> findProfilesByFirstName(String firstName) {
+        return profileQueryService.findByName_FirstNameContainingIgnoreCase(firstName);
     }
 }

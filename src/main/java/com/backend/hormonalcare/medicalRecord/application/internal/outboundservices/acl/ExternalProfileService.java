@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ExternalProfileService {
@@ -60,5 +62,10 @@ public class ExternalProfileService {
         String birthday = profilesContextFacade.getProfileBirthday(profileId);
 
         return Optional.of(new ProfileDetails(profileId, fullName, image, gender, phoneNumber, birthday));
+
+    }
+
+    public List<ProfileDetails> fetchProfilesByFirstName(String firstName) {
+        return profilesContextFacade.findProfileDetailsByFirstName(firstName);
     }
 }
