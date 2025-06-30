@@ -139,14 +139,18 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
     }
 
     @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<List<PatientResource>> getAllPatientsByDoctorId(@PathVariable Long doctorId) {
+    public ResponseEntity<List<PatientWithProfileResource>> getAllPatientsByDoctorId(@PathVariable Long doctorId) {
         var getAllPatientsByDoctorIdQuery = new GetAllPatientsByDoctorIdQuery(doctorId);
         var patients = patientQueryService.handle(getAllPatientsByDoctorIdQuery);
         if (patients.isEmpty()) return ResponseEntity.notFound().build();
-        var patientResources = patients.stream()
-                .map(PatientResourceFromEntityAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(patientResources);
+        var patientWithProfileResources = patients.stream()
+                .map(patient -> {
+                    var profileDetailsOptional = externalProfileService.fetchProfileDetails(patient.getProfileId());
+                    var profileDetails = profileDetailsOptional.orElse(null);
+                    return PatientWithProfileResourceFromEntityAssembler.toResourceFromEntity(patient, profileDetails);
+                })
+                .toList();
+        return ResponseEntity.ok(patientWithProfileResources);
     }
 
     @PutMapping("/{patientId}")
