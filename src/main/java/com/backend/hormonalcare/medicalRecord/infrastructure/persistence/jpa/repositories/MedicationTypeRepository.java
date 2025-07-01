@@ -1,6 +1,5 @@
 package com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories;
 
-import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.Medication;
 import com.backend.hormonalcare.medicalRecord.domain.model.entities.MedicationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
