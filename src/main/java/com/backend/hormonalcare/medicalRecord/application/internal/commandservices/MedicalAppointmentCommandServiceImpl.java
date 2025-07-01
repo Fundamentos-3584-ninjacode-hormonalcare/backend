@@ -5,7 +5,6 @@ import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreateMedica
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.DeleteMedicalAppointmentCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.UpdateMedicalAppointmentCommand;
 import com.backend.hormonalcare.medicalRecord.domain.services.MedicalAppointmentCommandService;
-import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.*;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.MedicalAppointmentRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;

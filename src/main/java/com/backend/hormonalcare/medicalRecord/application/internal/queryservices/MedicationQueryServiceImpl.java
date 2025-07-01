@@ -2,7 +2,6 @@ package com.backend.hormonalcare.medicalRecord.application.internal.queryservice
 
 import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.Medication;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
-import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
 import com.backend.hormonalcare.medicalRecord.domain.services.MedicationQueryService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.MedicationRepository;
 import org.springframework.stereotype.Service;

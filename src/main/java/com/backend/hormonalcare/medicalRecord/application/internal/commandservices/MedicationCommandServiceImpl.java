@@ -7,7 +7,6 @@ import com.backend.hormonalcare.medicalRecord.domain.model.commands.UpdateMedica
 import com.backend.hormonalcare.medicalRecord.domain.model.entities.MedicationType;
 import com.backend.hormonalcare.medicalRecord.domain.model.entities.Prescription;
 import com.backend.hormonalcare.medicalRecord.domain.services.MedicationCommandService;
-import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.*;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.MedicalRecordRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.MedicationRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.MedicationTypeRepository;

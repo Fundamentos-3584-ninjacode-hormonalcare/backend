@@ -1,15 +1,9 @@
 package com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl;
 
 import okhttp3.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import net.coobird.thumbnailator.Thumbnails;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Component("medicalRecordSupabaseStorageService")
@@ -22,21 +16,17 @@ public class SupabaseStorageServiceMedicalExam {
     }
 
     public String uploadFile(byte[] fileData, String originalFileName) throws IOException {
-        // Check file size limit (2MB)
-        final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+        final long MAX_FILE_SIZE = 2 * 1024 * 1024;
         if (fileData.length > MAX_FILE_SIZE) {
             throw new IOException("File is too large. Maximum allowed size is 2MB.");
         }
 
-        // Ensure the file is stored in the "medical-exam" folder
         String uniqueFileName = "medical-exam/" + UUID.randomUUID() + "-" + originalFileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 
-        // Determine the Content-Type based on the file extension
         String contentType;
         String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1).toLowerCase();
         switch (fileExtension) {
             case "jpg":
-            // case "jpeg":
                 contentType = "image/jpeg";
                 break;
             case "png":
