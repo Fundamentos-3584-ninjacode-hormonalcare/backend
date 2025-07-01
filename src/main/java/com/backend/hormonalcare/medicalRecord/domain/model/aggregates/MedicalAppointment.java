@@ -1,7 +1,6 @@
 package com.backend.hormonalcare.medicalRecord.domain.model.aggregates;
 
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreateMedicalAppointmentCommand;
-import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.*;
 import com.backend.hormonalcare.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;

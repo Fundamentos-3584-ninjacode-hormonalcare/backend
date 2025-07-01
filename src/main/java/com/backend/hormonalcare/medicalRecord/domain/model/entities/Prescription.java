@@ -2,7 +2,6 @@ package com.backend.hormonalcare.medicalRecord.domain.model.entities;
 
 import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.MedicalRecord;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreatePrescriptionCommand;
-import com.backend.hormonalcare.medicalRecord.domain.model.commands.UpdatePrescriptionCommand;
 import com.backend.hormonalcare.shared.domain.model.entities.AuditableModel;
 import jakarta.persistence.*;
 import lombok.Getter;
