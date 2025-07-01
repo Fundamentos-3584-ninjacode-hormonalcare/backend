@@ -1,6 +1,5 @@
 package com.backend.hormonalcare.medicalRecord.interfaces.rest;
 
-import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.MedicalAppointment;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.DeleteMedicalAppointmentCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetAllMedicalAppointmentQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetMedicalAppointmentByDoctorIdQuery;

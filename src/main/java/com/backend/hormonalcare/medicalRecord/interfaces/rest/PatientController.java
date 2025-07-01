@@ -3,7 +3,6 @@ package com.backend.hormonalcare.medicalRecord.interfaces.rest;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
 import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.PatientRecordId;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.*;
-import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import com.backend.hormonalcare.medicalRecord.domain.services.PatientCommandService;
 import com.backend.hormonalcare.medicalRecord.domain.services.PatientQueryService;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
