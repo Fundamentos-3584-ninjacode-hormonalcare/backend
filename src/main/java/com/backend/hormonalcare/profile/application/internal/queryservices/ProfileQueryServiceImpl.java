@@ -30,12 +30,10 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
     public List<Profile> findByName_FirstNameContainingIgnoreCase(String firstName) {
         return profileRepository.findByName_FirstNameContainingIgnoreCase(firstName);
     }
-
     @Override
     public Optional<Profile> handle(GetProfileByPhoneNumberQuery query) {
         return profileRepository.findByPhoneNumber(query.phoneNumber());
     }
-
     @Override
     public List<Profile> handle(GetProfileByNameQuery query) {
         return profileRepository.findByName_FirstNameContainingIgnoreCase(query.name());
@@ -54,5 +52,10 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
     @Override
     public Optional<Profile> handle(GetProfileByUserIdQuery query) {
         return profileRepository.findByUserId(query.userId());
+    }
+
+    @Override
+    public Optional<Profile> findByUserId(Long userId) {
+        return profileRepository.findByUserId(userId);
     }
 }

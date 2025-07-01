@@ -35,45 +35,46 @@ public class PatientController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<PatientWithProfileResource> createPatient(
-        @RequestParam("firstName") String firstName,
-        @RequestParam("lastName") String lastName,
-        @RequestParam("gender") String gender,
-        @RequestParam("phoneNumber") String phoneNumber,
-        @RequestParam("birthday") String birthday,
-        @RequestParam("userId") Long userId,
-        @RequestParam("typeOfBlood") String typeOfBlood,
-        @RequestParam(value = "personalHistory", required = false) String personalHistory,
-        @RequestParam(value = "familyHistory", required = false) String familyHistory,
-        @RequestParam(value = "doctorId", required = false) Long doctorId,
-        @RequestParam(value = "file", required = false) MultipartFile file) {
-    try {
-        String image = null;
-        if (file != null && !file.isEmpty()) {
-            image = supabaseStorageService.uploadFile(file.getBytes(), file.getOriginalFilename());
-        }
 
-        Date birthdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(birthday);
+    public ResponseEntity<PatientWithProfileResource> createPatient(
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("gender") String gender,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("birthday") String birthday,
+            @RequestParam("userId") Long userId,
+            @RequestParam("typeOfBlood") String typeOfBlood,
+            @RequestParam(value = "personalHistory", required = false) String personalHistory,
+            @RequestParam(value = "familyHistory", required = false) String familyHistory,
+            @RequestParam(value = "doctorId", required = false) Long doctorId,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            String image = null;
+            if (file != null && !file.isEmpty()) {
+                image = supabaseStorageService.uploadFile(file.getBytes(), file.getOriginalFilename());
+            }
 
-        var createPatientCommand = new CreatePatientCommand(
-                firstName,
-                lastName,
-                gender,
-                phoneNumber,
-                image,
-                birthdayDate,
-                userId,
-                typeOfBlood,
-                personalHistory,
-                familyHistory,
-                doctorId
-        );
+            Date birthdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(birthday);
 
-        var patientOptional = patientCommandService.handle(createPatientCommand);
-        if (patientOptional.isEmpty()) return ResponseEntity.badRequest().build();
+            var createPatientCommand = new CreatePatientCommand(
+                    firstName,
+                    lastName,
+                    gender,
+                    phoneNumber,
+                    image,
+                    birthdayDate,
+                    userId,
+                    typeOfBlood,
+                    personalHistory,
+                    familyHistory,
+                    doctorId
+            );
 
-        var patient = patientOptional.get();
-        var patientWithProfileResource = new PatientWithProfileResource(
+            var patientOptional = patientCommandService.handle(createPatientCommand);
+            if (patientOptional.isEmpty()) return ResponseEntity.badRequest().build();
+
+            var patient = patientOptional.get();
+            var patientWithProfileResource = new PatientWithProfileResource(
                     patient.getId(),
                     firstName + " " + lastName,
                     image,
@@ -85,36 +86,34 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
                     familyHistory,
                     doctorId,
                     patient.getProfileId()
-                );
-        return new ResponseEntity<>(patientWithProfileResource, HttpStatus.CREATED);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-    }
-}
+            );
+            return new ResponseEntity<>(patientWithProfileResource, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 
-
-
-    
-
-    @GetMapping("/{patientId}/profile-id")
-    public ResponseEntity<Long> getProfileIdByPatientId(@PathVariable Long patientId) {
-        var getProfileIdByPatientIdQuery = new GetProfileIdByPatientIdQuery(patientId);
-        var profileId = patientQueryService.handle(getProfileIdByPatientIdQuery);
-        if (profileId.isEmpty()) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(profileId.get());
-    }
-
-    @GetMapping("/profile/{profileId}")
-    public ResponseEntity<PatientResource> getPatientByProfileId(@PathVariable Long profileId) {
-        var getPatientByProfileIdQuery = new GetPatientByProfileIdQuery(new ProfileId(profileId));
-        var patient = patientQueryService.handle(getPatientByProfileIdQuery);
-        if (patient.isEmpty()) {
-            return ResponseEntity.notFound().build();
         }
-        var patientResource = PatientResourceFromEntityAssembler.toResourceFromEntity(patient.get());
-        return ResponseEntity.ok(patientResource);
+
     }
+
+    // @GetMapping("/{patientId}/profile-id")
+    // public ResponseEntity<Long> getProfileIdByPatientId(@PathVariable Long patientId) {
+    //     var getProfileIdByPatientIdQuery = new GetProfileIdByPatientIdQuery(patientId);
+    //     var profileId = patientQueryService.handle(getProfileIdByPatientIdQuery);
+    //     if (profileId.isEmpty()) return ResponseEntity.notFound().build();
+    //     return ResponseEntity.ok(profileId.get());
+    // }
+
+    // @GetMapping("/profile/{profileId}")
+    // public ResponseEntity<PatientResource> getPatientByProfileId(@PathVariable Long profileId) {
+    //     var getPatientByProfileIdQuery = new GetPatientByProfileIdQuery(new ProfileId(profileId));
+    //     var patient = patientQueryService.handle(getPatientByProfileIdQuery);
+    //     if (patient.isEmpty()) {
+    //         return ResponseEntity.notFound().build();
+    //     }
+    //     var patientResource = PatientResourceFromEntityAssembler.toResourceFromEntity(patient.get());
+    //     return ResponseEntity.ok(patientResource);
+    // }
 
     @GetMapping("/record/{patientRecordId}")
     public ResponseEntity<PatientResource> getPatientByPatientRecordId(@PathVariable String patientRecordId) {
@@ -128,12 +127,14 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
 
 
     @GetMapping("/{patientId}")
-    public ResponseEntity<PatientResource> getPatientById(@PathVariable Long patientId) {
+    public ResponseEntity<PatientWithProfileResource> getPatientById(@PathVariable Long patientId) {
         var getPatientByIdQuery = new GetPatientByIdQuery(patientId);
         var patient = patientQueryService.handle(getPatientByIdQuery);
         if (patient.isEmpty()) return ResponseEntity.notFound().build();
-        var patientResource = PatientResourceFromEntityAssembler.toResourceFromEntity(patient.get());
-        return ResponseEntity.ok(patientResource);
+        var profileDetailsOptional = externalProfileService.fetchProfileDetails(patient.get().getProfileId());
+        var profileDetails = profileDetailsOptional.orElse(null);
+        var patientWithProfileResource = PatientWithProfileResourceFromEntityAssembler.toResourceFromEntity(patient.get(), profileDetails);
+        return ResponseEntity.ok(patientWithProfileResource);
     }
 
     @GetMapping("/doctor/{doctorId}")
@@ -210,17 +211,6 @@ public ResponseEntity<PatientWithProfileResource> createPatient(
         if (updatedPatient.isEmpty()) return ResponseEntity.badRequest().build();
         var patientResource = PatientResourceFromEntityAssembler.toResourceFromEntity(updatedPatient.get());
         return ResponseEntity.ok(patientResource);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<PatientWithProfileResource>> getAllPatients() {
-        var patients = patientQueryService.handle(new GetAllPatientsQuery());
-        var patientWithProfileResources = patients.stream().map(patient -> {
-            var profileDetailsOptional = externalProfileService.fetchProfileDetails(patient.getProfileId());
-            var profileDetails = profileDetailsOptional.orElse(null);
-            return PatientWithProfileResourceFromEntityAssembler.toResourceFromEntity(patient, profileDetails);
-        }).toList();
-        return ResponseEntity.ok(patientWithProfileResources);
     }
 }
 
