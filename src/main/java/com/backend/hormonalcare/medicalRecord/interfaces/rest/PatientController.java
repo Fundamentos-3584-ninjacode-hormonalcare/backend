@@ -204,6 +204,20 @@ public class PatientController {
         return ResponseEntity.ok(resources);
     }
 
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<PatientWithProfileResource> getPatientByUserId(@PathVariable Long userId) {
+        var patientOptional = patientQueryService.findPatientByUserId(userId);
+        if (patientOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var patient = patientOptional.get();
+        var profileDetailsOptional = externalProfileService.fetchProfileDetails(patient.getProfileId());
+        var profileDetails = profileDetailsOptional.orElse(null);
+
+        var patientWithProfileResource = PatientWithProfileResourceFromEntityAssembler.toResourceFromEntity(patient, profileDetails);
+        return ResponseEntity.ok(patientWithProfileResource);
+    }
+
     @PutMapping("/doctor/{patientId}")
     public ResponseEntity<PatientResource> updatePatientDoctorId(@PathVariable Long patientId, @RequestBody UpdatePatientDoctorIdResource updatePatientDoctorIdResource) {
         var updatePatientDoctorIdCommand = UpdatePatientDoctorIdCommandFromResourceAssembler.toCommandFromResource(patientId, updatePatientDoctorIdResource);

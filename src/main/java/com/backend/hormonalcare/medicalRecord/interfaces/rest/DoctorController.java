@@ -63,22 +63,18 @@ public class DoctorController {
             if (file != null && !file.isEmpty()) {
                 image = supabaseStorageService.uploadFile(file.getBytes(), file.getOriginalFilename());
             }
-
-            // Convertir el string de fecha a un objeto Date
             Date birthdayDate;
             try {
                 birthdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(birthday);
             } catch (ParseException e) {
                 return ResponseEntity.badRequest().build();
             }
-
-            // Crear el comando con la URL de la imagen
             var createDoctorCommand = new CreateDoctorCommand(
                     firstName,
                     lastName,
                     gender,
                     phoneNumber,
-                    image,  // URL de la imagen subida
+                    image,
                     birthdayDate,
                     userId,
                     professionalIdentificationNumber,
@@ -106,7 +102,7 @@ public class DoctorController {
 
             return new ResponseEntity<>(doctorWithProfileResource, HttpStatus.CREATED);
         } catch (Exception e) {
-            e.printStackTrace(); // O usa un logger
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -157,15 +153,6 @@ public class DoctorController {
         return ResponseEntity.ok(doctorWithProfileResource);
     }
 
-    @PutMapping("/{doctorId}")
-    public ResponseEntity<DoctorResource> updateDoctor(@PathVariable Long doctorId, @RequestBody UpdateDoctorResource updateDoctorResource){
-        var updateDoctorCommand = UpdateDoctorCommandFromResourceAssembler.toCommandFromResource(doctorId, updateDoctorResource);
-        var updatedDoctor = doctorCommandService.handle(updateDoctorCommand);
-        if(updatedDoctor.isEmpty()) return ResponseEntity.notFound().build();
-        var doctorResource = DoctorResourceFromEntityAssembler.toResourceFromEntity(updatedDoctor.get());
-        return ResponseEntity.ok(doctorResource);
-    }
-
     @GetMapping
     public ResponseEntity<List<DoctorWithProfileResource>> getAllDoctors() {
         var doctors = doctorQueryService.handle(new GetAllDoctorsQuery());
@@ -189,5 +176,14 @@ public class DoctorController {
 
         var doctorWithProfileResource = DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
         return ResponseEntity.ok(doctorWithProfileResource);
+    }
+
+    @PutMapping("/{doctorId}")
+    public ResponseEntity<DoctorResource> updateDoctor(@PathVariable Long doctorId, @RequestBody UpdateDoctorResource updateDoctorResource){
+        var updateDoctorCommand = UpdateDoctorCommandFromResourceAssembler.toCommandFromResource(doctorId, updateDoctorResource);
+        var updatedDoctor = doctorCommandService.handle(updateDoctorCommand);
+        if(updatedDoctor.isEmpty()) return ResponseEntity.notFound().build();
+        var doctorResource = DoctorResourceFromEntityAssembler.toResourceFromEntity(updatedDoctor.get());
+        return ResponseEntity.ok(doctorResource);
     }
 }

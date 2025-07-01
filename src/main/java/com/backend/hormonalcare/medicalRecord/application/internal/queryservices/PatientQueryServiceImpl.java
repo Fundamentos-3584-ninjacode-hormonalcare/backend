@@ -3,11 +3,10 @@ package com.backend.hormonalcare.medicalRecord.application.internal.queryservice
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
 import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.Patient;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
+import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import com.backend.hormonalcare.medicalRecord.domain.services.PatientQueryService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;
 import org.springframework.stereotype.Service;
-import com.backend.hormonalcare.medicalRecord.interfaces.dto.PatientWithProfileDetails;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,6 +67,13 @@ public class PatientQueryServiceImpl implements PatientQueryService {
                         .map(profile -> profile.getFullName().toLowerCase().contains(query.name().toLowerCase()))
                         .orElse(false))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Patient> findPatientByUserId(Long userId) {
+        Optional<Long> profileIdOpt = externalProfileService.fetchProfileIdByUserId(userId);
+        if (profileIdOpt.isEmpty()) return Optional.empty();
+        return patientRepository.findByProfileId(new ProfileId(profileIdOpt.get()));
     }
 }
 
