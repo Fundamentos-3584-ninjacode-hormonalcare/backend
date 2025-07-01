@@ -1,9 +1,7 @@
 package com.backend.hormonalcare.medicalRecord.interfaces.rest;
 
-import com.backend.hormonalcare.medicalRecord.domain.model.commands.UpdateDoctorCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreateDoctorCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetAllDoctorsQuery;
-import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetAllMedicalAppointmentQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByDoctorRecordIdQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByIdQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByProfileIdQuery;
@@ -12,22 +10,15 @@ import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.DoctorRe
 import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorCommandService;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorQueryService;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.CreateDoctorResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.DoctorResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.DoctorWithProfileResource;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.MedicalAppointmentResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.UpdateDoctorResource;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.CreateDoctorCommandFromResourceAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorWithProfileResourceFromEntityAssembler;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.MedicalAppointmentResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.UpdateDoctorCommandFromResourceAssembler;
-import com.backend.hormonalcare.profile.interfaces.acl.ProfileDetails;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -42,7 +33,7 @@ import com.backend.hormonalcare.medicalRecord.application.internal.outboundservi
 
 
 @RestController
-@RequestMapping(value = "/api/v1/doctor/doctor", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/doctor", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DoctorController {
     private final DoctorCommandService doctorCommandService;
     private final DoctorQueryService doctorQueryService;
