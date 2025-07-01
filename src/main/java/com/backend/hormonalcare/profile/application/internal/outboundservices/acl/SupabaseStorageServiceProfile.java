@@ -3,18 +3,13 @@ package com.backend.hormonalcare.profile.application.internal.outboundservices.a
 import okhttp3.*;
 import org.springframework.stereotype.Component;
 import net.coobird.thumbnailator.Thumbnails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.tika.Tika;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.Arrays;
 
 @Component("profileSupabaseStorageService")
 public class SupabaseStorageServiceProfile {
@@ -27,25 +22,19 @@ public class SupabaseStorageServiceProfile {
 
     public String uploadFile(byte[] fileData, String originalFileName) throws IOException {
         if (fileData == null || originalFileName == null || originalFileName.isEmpty()) {
-            return null; // Retorna null si no se proporciona un archivo
+            return null;
         }
 
-        // Removed logging statements for cleaner code
-
-        // Validar el tamaño del archivo (2MB máximo)
         final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
         if (fileData.length > MAX_FILE_SIZE) {
             throw new IOException("El archivo es demasiado grande. El tamaño máximo permitido es 2MB.");
         }
 
-        // Validar el formato de la imagen usando Apache Tika
         Tika tika = new Tika();
         String detectedType = tika.detect(fileData);
         if (!detectedType.startsWith("image/")) {
-            // Removed logging statements for cleaner code
         }
 
-        // Validar la extensión del archivo
         String fileExtension = FilenameUtils.getExtension(originalFileName).toLowerCase();
         if (!fileExtension.equals("jpg") && !fileExtension.equals("jpeg") && !fileExtension.equals("png")) {
             throw new IOException("Formato de archivo no soportado: " + fileExtension);
@@ -56,23 +45,20 @@ public class SupabaseStorageServiceProfile {
         byte[] imageDataToUpload;
 
         try {
-            // Intenta redimensionar la imagen
             ByteArrayInputStream inputStream = new ByteArrayInputStream(fileData);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             Thumbnails.of(inputStream)
                      .size(64, 64)
-                     .outputFormat("jpg") // Convertir a JPG para mayor compresión
+                     .outputFormat("jpg")
                      .toOutputStream(outputStream);
 
             imageDataToUpload = outputStream.toByteArray();
         } catch (Exception e) {
-            // Removed logging statements for cleaner code
             imageDataToUpload = fileData;
         }
 
-        // Determinar el Content-Type
-        String contentType = "image/jpeg"; // Tipo predeterminado
+        String contentType = "image/jpeg";
 
         RequestBody requestBody = RequestBody.create(imageDataToUpload, MediaType.parse(contentType));
 

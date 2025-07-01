@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.io.IOException;
-import java.util.UUID;
 
 @Service
 public class ProfileCommandServiceImpl implements ProfileCommandService {

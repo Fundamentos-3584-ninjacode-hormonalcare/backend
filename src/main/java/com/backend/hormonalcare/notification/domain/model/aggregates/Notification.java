@@ -7,8 +7,6 @@ import com.backend.hormonalcare.shared.domain.model.aggregates.AuditableAbstract
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.util.Date;
-
 @Getter
 @Entity
 public class Notification extends AuditableAbstractAggregateRoot<Notification> {
