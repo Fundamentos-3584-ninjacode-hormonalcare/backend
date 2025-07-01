@@ -68,4 +68,10 @@ public class ExternalProfileService {
     public List<ProfileDetails> fetchProfilesByFirstName(String firstName) {
         return profilesContextFacade.findProfileDetailsByFirstName(firstName);
     }
+
+    public Optional<Long> fetchProfileIdByUserId(Long userId) {
+        Long profileId = profilesContextFacade.fetchProfileIdByUserId(userId);
+        if (profileId == null || profileId == 0L) return Optional.empty();
+        return Optional.of(profileId);
+    }
 }

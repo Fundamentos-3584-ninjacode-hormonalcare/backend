@@ -185,4 +185,18 @@ public class DoctorController {
         }).toList();
         return ResponseEntity.ok(doctorWithProfileResources);
     }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<DoctorWithProfileResource> getDoctorByUserId(@PathVariable Long userId) {
+        var doctorOptional = doctorQueryService.findDoctorByUserId(userId);
+        if (doctorOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var doctor = doctorOptional.get();
+        var profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
+        var profileDetails = profileDetailsOptional.orElse(null);
+
+        var doctorWithProfileResource = DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
+        return ResponseEntity.ok(doctorWithProfileResource);
+    }
 }

@@ -115,4 +115,10 @@ public class ProfileContextFacade {
     public List<Profile> findProfilesByFirstName(String firstName) {
         return profileQueryService.findByName_FirstNameContainingIgnoreCase(firstName);
     }
+
+    public Long fetchProfileIdByUserId(Long userId) {
+        var profileOpt = profileQueryService.findByUserId(userId);
+        if (profileOpt.isEmpty()) return 0L;
+        return profileOpt.get().getId();
+    }
 }
