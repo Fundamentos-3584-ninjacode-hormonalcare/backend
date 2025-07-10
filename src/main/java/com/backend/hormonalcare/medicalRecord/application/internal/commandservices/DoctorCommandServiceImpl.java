@@ -11,7 +11,7 @@ import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.SubSpeci
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorCommandService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;
-import org.springframework.context.ApplicationEventPublisher;
+import com.backend.hormonalcare.shared.infrastructure.events.AsyncEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,20 +22,21 @@ public class DoctorCommandServiceImpl implements DoctorCommandService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final ExternalProfileService externalProfileService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final AsyncEventPublisher asyncEventPublisher;
 
-    public DoctorCommandServiceImpl(DoctorRepository doctorRepository, PatientRepository patientRepository, ExternalProfileService externalProfileService, ApplicationEventPublisher eventPublisher) {
+    public DoctorCommandServiceImpl(DoctorRepository doctorRepository, PatientRepository patientRepository,
+            ExternalProfileService externalProfileService, AsyncEventPublisher asyncEventPublisher) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.externalProfileService = externalProfileService;
-        this.eventPublisher = eventPublisher;
+        this.asyncEventPublisher = asyncEventPublisher;
     }
 
     @Override
     public Optional<Doctor> handle(CreateDoctorCommand command) {
 
         var profileId = externalProfileService.fetchProfileIdByPhoneNumber(command.phoneNumber());
-        if (profileId.isEmpty()){
+        if (profileId.isEmpty()) {
             profileId = externalProfileService.createProfile(
                     command.firstName(),
                     command.lastName(),
@@ -44,7 +45,7 @@ public class DoctorCommandServiceImpl implements DoctorCommandService {
                     command.image(),
                     command.birthday(),
                     command.userId());
-        } else{
+        } else {
             doctorRepository.findByProfileId(profileId.get()).ifPresent(doctor -> {
                 throw new IllegalArgumentException("Doctor already exists");
             });
@@ -52,15 +53,15 @@ public class DoctorCommandServiceImpl implements DoctorCommandService {
                 throw new IllegalArgumentException("Patient already exists");
             });
         }
-        if (profileId.isEmpty()) throw new IllegalArgumentException("Unable to create profile");
+        if (profileId.isEmpty())
+            throw new IllegalArgumentException("Unable to create profile");
 
         var doctor = new Doctor(
                 new ProfessionalIdentificationNumber(command.professionalIdentificationNumber()),
                 new SubSpecialty(command.subSpecialty()),
-                profileId.get()
-        );
+                profileId.get());
         doctorRepository.save(doctor);
-        eventPublisher.publishEvent(new DoctorCreatedEvent(doctor.getId()));
+        asyncEventPublisher.publishEvent(new DoctorCreatedEvent(doctor.getId()));
         return Optional.of(doctor);
     }
 
@@ -80,8 +81,7 @@ public class DoctorCommandServiceImpl implements DoctorCommandService {
                 command.gender(),
                 command.phoneNumber(),
                 command.image(),
-                command.birthday()
-        );
+                command.birthday());
         if (!profileUpdated) {
             throw new IllegalArgumentException("Failed to update profile for doctor with id " + command.id());
         }
@@ -91,7 +91,4 @@ public class DoctorCommandServiceImpl implements DoctorCommandService {
 
     }
 
-
 }
-
-

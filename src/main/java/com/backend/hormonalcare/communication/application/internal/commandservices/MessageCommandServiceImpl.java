@@ -3,7 +3,6 @@ package com.backend.hormonalcare.communication.application.internal.commandservi
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.backend.hormonalcare.communication.application.internal.outboundservices.acl.CommunicationExternalProfileService;
@@ -16,36 +15,36 @@ import com.backend.hormonalcare.communication.domain.model.commands.UpdateMessag
 import com.backend.hormonalcare.communication.domain.services.MessageCommandService;
 import com.backend.hormonalcare.communication.infrastructure.persistence.mongodb.repositories.ConversationRepository;
 import com.backend.hormonalcare.communication.infrastructure.persistence.mongodb.repositories.MessageRepository;
+import com.backend.hormonalcare.shared.infrastructure.events.AsyncEventPublisher;
 
 @Service
 public class MessageCommandServiceImpl implements MessageCommandService {
-    
+
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
-    private final ApplicationEventPublisher eventPublisher;
-    
+    private final AsyncEventPublisher asyncEventPublisher;
+
     public MessageCommandServiceImpl(
-        MessageRepository messageRepository,
-        ConversationRepository conversationRepository,
-        CommunicationExternalProfileService externalProfileService,
-        ApplicationEventPublisher eventPublisher) {
+            MessageRepository messageRepository,
+            ConversationRepository conversationRepository,
+            CommunicationExternalProfileService externalProfileService,
+            AsyncEventPublisher asyncEventPublisher) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
-        this.eventPublisher = eventPublisher;
+        this.asyncEventPublisher = asyncEventPublisher;
     }
-    
+
     @Override
     public Optional<Message> handle(SendMessageCommand command) {
         String conversationId = command.conversationId();
-        
+
         // Check if conversation exists
         Optional<Conversation> conversationOptional;
         if (conversationId == null || conversationId.isEmpty()) {
             conversationOptional = conversationRepository.findByParticipants(
-                command.senderId(), 
-                command.recipientId()
-            );
-            
+                    command.senderId(),
+                    command.recipientId());
+
             if (conversationOptional.isEmpty()) {
                 throw new IllegalArgumentException("Conversation not found");
             }
@@ -60,53 +59,53 @@ public class MessageCommandServiceImpl implements MessageCommandService {
                 throw new IllegalArgumentException("Sender is not a participant in this conversation");
             }
         }
-        
+
         // Create and save message
         var message = new Message(command, conversationId);
         messageRepository.save(message);
-        
+
         // Update the conversation with last message info
         Conversation conversation = conversationOptional.get();
         conversation.updateLastMessage(command.content(), new Date());
         conversationRepository.save(conversation);
-        
-        // Publish event
-        eventPublisher.publishEvent(new MessageSentEvent(
-            message.getId(),
-            message.getSenderId(),
-            message.getRecipientId(),
-            message.getConversationId()
-        ));
-        
+
+        // Publish event asíncronamente
+        asyncEventPublisher.publishEvent(new MessageSentEvent(
+                message.getId(),
+                message.getSenderId(),
+                message.getRecipientId(),
+                message.getConversationId()));
+
         return Optional.of(message);
     }
-    
+
     @Override
     public Optional<Message> handle(UpdateMessageStatusCommand command) {
         Optional<Message> messageOptional = messageRepository.findById(command.messageId());
         if (messageOptional.isEmpty()) {
             return Optional.empty();
         }
-        
+
         Message message = messageOptional.get();
-        
+
         switch (command.status()) {
             case DELIVERED -> message.markAsDelivered();
             case READ -> message.markAsRead();
-            default -> { /* No action needed */ }
+            default -> {
+                /* No action needed */ }
         }
-        
+
         messageRepository.save(message);
         return Optional.of(message);
     }
-    
+
     @Override
     public void handle(DeleteMessageCommand command) {
         Optional<Message> messageOptional = messageRepository.findById(command.messageId());
         if (messageOptional.isEmpty()) {
             return;
         }
-        
+
         Message message = messageOptional.get();
         message.markAsDeleted();
         messageRepository.save(message);
