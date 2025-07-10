@@ -7,12 +7,12 @@ import com.backend.hormonalcare.communication.domain.model.aggregates.Message;
 import com.backend.hormonalcare.communication.domain.model.commands.SendMessageCommand;
 import com.backend.hormonalcare.communication.infrastructure.persistence.mongodb.repositories.ConversationRepository;
 import com.backend.hormonalcare.communication.infrastructure.persistence.mongodb.repositories.MessageRepository;
+import com.backend.hormonalcare.shared.infrastructure.events.AsyncEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Date;
 import java.util.Optional;
@@ -27,14 +27,16 @@ class MessageCommandServiceImplTest {
 
     @Mock
     private MessageRepository messageRepository;
-    @Mock private ConversationRepository conversationRepository;
-    @Mock private ApplicationEventPublisher publisher;
+    @Mock
+    private ConversationRepository conversationRepository;
+    @Mock
+    private AsyncEventPublisher asyncEventPublisher;
 
     private MessageCommandServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new MessageCommandServiceImpl(messageRepository, conversationRepository, null, publisher);
+        service = new MessageCommandServiceImpl(messageRepository, conversationRepository, null, asyncEventPublisher);
     }
 
     @Test
@@ -53,6 +55,6 @@ class MessageCommandServiceImplTest {
 
         assertTrue(result.isPresent());
         verify(messageRepository).save(any(Message.class));
-        verify(publisher).publishEvent(any(MessageSentEvent.class));
+        verify(asyncEventPublisher).publishEvent(any(MessageSentEvent.class));
     }
 }

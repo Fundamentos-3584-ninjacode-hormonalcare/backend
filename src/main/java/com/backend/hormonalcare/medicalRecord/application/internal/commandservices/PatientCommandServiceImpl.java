@@ -10,22 +10,26 @@ import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileI
 import com.backend.hormonalcare.medicalRecord.domain.services.PatientCommandService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;
-import org.springframework.context.ApplicationEventPublisher;
+import com.backend.hormonalcare.shared.infrastructure.events.AsyncEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
 @Service
 public class PatientCommandServiceImpl implements PatientCommandService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final ExternalProfileService externalProfileService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final AsyncEventPublisher asyncEventPublisher;
 
-    public PatientCommandServiceImpl(PatientRepository patientRepository, DoctorRepository doctorRepository, ExternalProfileService externalProfileService, ApplicationEventPublisher eventPublisher) {
+    public PatientCommandServiceImpl(PatientRepository patientRepository,
+            DoctorRepository doctorRepository,
+            ExternalProfileService externalProfileService,
+            AsyncEventPublisher asyncEventPublisher) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.externalProfileService = externalProfileService;
-        this.eventPublisher = eventPublisher;
+        this.asyncEventPublisher = asyncEventPublisher;
     }
 
     @Override
@@ -38,7 +42,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
             throw new IllegalArgumentException("Doctor with id " + doctorId + " does not exist");
         }
         var profileId = externalProfileService.fetchProfileIdByPhoneNumber(command.phoneNumber());
-        if (profileId.isEmpty()){
+        if (profileId.isEmpty()) {
             profileId = externalProfileService.createProfile(
                     command.firstName(),
                     command.lastName(),
@@ -47,7 +51,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
                     command.image(),
                     command.birthday(),
                     command.userId());
-        } else{
+        } else {
             patientRepository.findByProfileId(profileId.get()).ifPresent(patient -> {
                 throw new IllegalArgumentException("Patient already exists");
             });
@@ -56,17 +60,19 @@ public class PatientCommandServiceImpl implements PatientCommandService {
             });
 
         }
-        if (profileId.isEmpty()) throw new IllegalArgumentException("Unable to create profile");
+        if (profileId.isEmpty())
+            throw new IllegalArgumentException("Unable to create profile");
 
-
-        var patient = new Patient(profileId.get(),command.typeOfBlood(), new PersonalHistory(command.personalHistory()), new FamilyHistory(command.familyHistory()), doctorId);
+        var patient = new Patient(profileId.get(), command.typeOfBlood(),
+                new PersonalHistory(command.personalHistory()), new FamilyHistory(command.familyHistory()), doctorId);
         patientRepository.save(patient);
-        eventPublisher.publishEvent(new PatientCreatedEvent(patient.getId()));
+        // Usar publicación asíncrona de eventos
+        asyncEventPublisher.publishEvent(new PatientCreatedEvent(patient.getId()));
         return Optional.of(patient);
     }
 
     @Override
-    public Optional<Patient> handle(UpdatePatientCommand command){
+    public Optional<Patient> handle(UpdatePatientCommand command) {
         var patientOptional = patientRepository.findById(command.id());
         if (patientOptional.isEmpty()) {
             throw new IllegalArgumentException("Patient with id " + command.id() + " does not exist");
@@ -81,8 +87,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
                 command.gender(),
                 command.phoneNumber(),
                 command.image(),
-                command.birthday()
-        );
+                command.birthday());
         if (!profileUpdated) {
             throw new IllegalArgumentException("Failed to update profile for patient with id " + command.id());
         }
@@ -92,10 +97,10 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     }
 
     @Override
-    public Optional<Patient> handle(UpdatePatientDoctorIdCommand command){
+    public Optional<Patient> handle(UpdatePatientDoctorIdCommand command) {
         var id = command.id();
         if (!patientRepository.existsById(id)) {
-            throw new IllegalArgumentException("Patient with id "+ command.id() +"does not exists");
+            throw new IllegalArgumentException("Patient with id " + command.id() + "does not exists");
         }
         var result = patientRepository.findById(id);
         var patientToUpdate = result.get();
@@ -117,11 +122,11 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     public Optional<Patient> handle(UpdatePersonalHistoryPatientCommand command) {
         var id = command.id();
         if (!patientRepository.existsById(id)) {
-            throw new IllegalArgumentException("Patient with id "+ command.id() +"does not exists");
+            throw new IllegalArgumentException("Patient with id " + command.id() + "does not exists");
         }
         var result = patientRepository.findById(id);
         var patientToUpdate = result.get();
-        try{
+        try {
             var updatedPatient = patientRepository.save(patientToUpdate.updatePersonalHistory(command));
             return Optional.of(updatedPatient);
         } catch (Exception e) {
@@ -133,17 +138,16 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     public Optional<Patient> handle(UpdateFamilyHistoryPatientCommand command) {
         var id = command.id();
         if (!patientRepository.existsById(id)) {
-            throw new IllegalArgumentException("Patient with id "+ command.id() +"does not exists");
+            throw new IllegalArgumentException("Patient with id " + command.id() + "does not exists");
         }
         var result = patientRepository.findById(id);
         var patientToUpdate = result.get();
-        try{
+        try {
             var updatedPatient = patientRepository.save(patientToUpdate.updateFamilyHistory(command));
             return Optional.of(updatedPatient);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while updating patient: " + e.getMessage());
         }
     }
-
 
 }

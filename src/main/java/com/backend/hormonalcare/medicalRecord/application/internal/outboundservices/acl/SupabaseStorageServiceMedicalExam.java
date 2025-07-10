@@ -1,10 +1,12 @@
 package com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl;
 
 import okhttp3.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Component("medicalRecordSupabaseStorageService")
 public class SupabaseStorageServiceMedicalExam {
@@ -15,13 +17,26 @@ public class SupabaseStorageServiceMedicalExam {
         this.properties = properties;
     }
 
-    public String uploadFile(byte[] fileData, String originalFileName) throws IOException {
+    /**
+     * Upload file asynchronously to Supabase storage
+     * This method is annotated with @Async to offload the file processing and
+     * upload task
+     * from the main request thread, improving response times for the client.
+     *
+     * @param fileData         The byte array containing the file data
+     * @param originalFileName The original name of the file
+     * @return CompletableFuture with the public URL of the uploaded file
+     * @throws IOException If there's an error during file upload
+     */
+    @Async("taskExecutor")
+    public CompletableFuture<String> uploadFile(byte[] fileData, String originalFileName) throws IOException {
         final long MAX_FILE_SIZE = 2 * 1024 * 1024;
         if (fileData.length > MAX_FILE_SIZE) {
             throw new IOException("File is too large. Maximum allowed size is 2MB.");
         }
 
-        String uniqueFileName = "medical-exam/" + UUID.randomUUID() + "-" + originalFileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+        String uniqueFileName = "medical-exam/" + UUID.randomUUID() + "-"
+                + originalFileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 
         String contentType;
         String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1).toLowerCase();
@@ -72,10 +87,22 @@ public class SupabaseStorageServiceMedicalExam {
             }
         }
 
-        return properties.getUrl() + "/storage/v1/object/public/" + properties.getBucket() + "/" + uniqueFileName;
+        String publicUrl = properties.getUrl() + "/storage/v1/object/public/" + properties.getBucket() + "/"
+                + uniqueFileName;
+        return CompletableFuture.completedFuture(publicUrl);
     }
 
-    public void deleteFile(String filePath) throws IOException {
+    /**
+     * Delete file asynchronously from Supabase storage
+     * This method is annotated with @Async to offload the file deletion task
+     * from the main request thread, improving response times for the client.
+     *
+     * @param filePath The path to the file to delete
+     * @return CompletableFuture<Boolean> indicating success or failure
+     * @throws IOException If there's an error during file deletion
+     */
+    @Async("taskExecutor")
+    public CompletableFuture<Boolean> deleteFile(String filePath) throws IOException {
         Request request = new Request.Builder()
                 .url(properties.getUrl() + "/storage/v1/object/" + properties.getBucket() + "/" + filePath)
                 .addHeader("apikey", properties.getKey())
@@ -87,6 +114,7 @@ public class SupabaseStorageServiceMedicalExam {
             if (!response.isSuccessful()) {
                 throw new IOException("Failed to delete file: " + response);
             }
+            return CompletableFuture.completedFuture(true);
         }
     }
 
@@ -94,7 +122,4 @@ public class SupabaseStorageServiceMedicalExam {
         return properties;
     }
 
-    
 }
-
-
