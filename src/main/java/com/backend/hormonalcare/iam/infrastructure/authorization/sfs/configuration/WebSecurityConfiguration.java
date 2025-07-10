@@ -29,10 +29,8 @@ public class WebSecurityConfiguration {
     private final BCryptHashingService hashingService;
     private final AuthenticationEntryPoint unauthorizedRequestHandler;
 
-
     public WebSecurityConfiguration(
-            @Qualifier("defaultUserDetailsService")
-            UserDetailsService userDetailsService,
+            @Qualifier("defaultUserDetailsService") UserDetailsService userDetailsService,
             BearerTokenService tokenService,
             BCryptHashingService hashingService,
             AuthenticationEntryPoint unauthorizedRequestHandler) {
@@ -87,7 +85,9 @@ public class WebSecurityConfiguration {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
-                                "/webjars/**").permitAll()
+                                "/webjars/**",
+                                "/actuator/**")
+                        .permitAll()
                         .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authorizationRequestFilter(), UsernamePasswordAuthenticationFilter.class);
