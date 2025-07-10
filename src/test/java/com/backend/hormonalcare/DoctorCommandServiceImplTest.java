@@ -7,12 +7,12 @@ import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreateDoctor
 import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.PatientRepository;
+import com.backend.hormonalcare.shared.infrastructure.events.AsyncEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Date;
 import java.util.Optional;
@@ -27,20 +27,25 @@ class DoctorCommandServiceImplTest {
 
     @Mock
     private DoctorRepository doctorRepository;
-    @Mock private PatientRepository patientRepository;
-    @Mock private ExternalProfileService externalProfileService;
-    @Mock private ApplicationEventPublisher publisher;
+    @Mock
+    private PatientRepository patientRepository;
+    @Mock
+    private ExternalProfileService externalProfileService;
+    @Mock
+    private AsyncEventPublisher asyncEventPublisher;
 
     private DoctorCommandServiceImpl doctorService;
 
     @BeforeEach
     void setUp() {
-        doctorService = new DoctorCommandServiceImpl(doctorRepository, patientRepository, externalProfileService, publisher);
+        doctorService = new DoctorCommandServiceImpl(doctorRepository, patientRepository, externalProfileService,
+                asyncEventPublisher);
     }
 
     @Test
     void testHandleCreateDoctorSuccess() {
-        CreateDoctorCommand command = new CreateDoctorCommand("John", "Doe", "M", "999999999", "profile.jpg", new Date(),1L,123456L,"Cardiology");
+        CreateDoctorCommand command = new CreateDoctorCommand("John", "Doe", "M", "999999999", "profile.jpg",
+                new Date(), 1L, 123456L, "Cardiology");
 
         when(externalProfileService.fetchProfileIdByPhoneNumber(any(String.class)))
                 .thenReturn(Optional.empty());
@@ -52,9 +57,7 @@ class DoctorCommandServiceImplTest {
                 any(String.class),
                 any(String.class),
                 any(Date.class),
-                any(Long.class)
-        )).thenReturn(Optional.of(new ProfileId(42L)));
-
+                any(Long.class))).thenReturn(Optional.of(new ProfileId(42L)));
 
         Optional<Doctor> result = doctorService.handle(command);
 
