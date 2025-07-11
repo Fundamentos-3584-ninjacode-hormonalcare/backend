@@ -14,7 +14,7 @@
     <name>hormonal-care-backend</name>
     <description>hormonal-care-backend</description>
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
