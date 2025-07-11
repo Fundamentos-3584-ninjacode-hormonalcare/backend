@@ -25,9 +25,12 @@ public class HormonalCareBackendApplication {
                 @Override
                 public void addCorsMappings(@NonNull CorsRegistry registry) {
                     registry.addMapping("/**")
-                            .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH");
+                            .allowedOrigins("*") // Puedes reemplazar "*" por el dominio de tu frontend
+                            .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS")
+                            .allowedHeaders("*");
                 }
             };
         }
     }
+
 }
