@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: hormonal-care-backend
+
+  datasource:
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        naming:
+          physical-strategy: com.backend.hormonalcare.shared.infrastructure.persistence.jpa.configuration.strategy.SnakeCase
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
+
+# JWT
+authorization:
+  jwt:
+    secret: WriteHereYourSecretStringFroTokenSigningCredentials
+    expiration:
+      days: 7
+
+# Supabase
+supabase:
+  url: https://xrfpfxleavgqfklmfjvy.supabase.co
+  key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyZnBmeGxlYXZncWZrbG1manZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MjUzMjcsImV4cCI6MjA2MTEwMTMyN30.1BwP1G-CTNCFnCRUSoNQcEv-AXvgBZl9RQJqHB27SNI
+  bucket: hormonalcare-file
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers,beans,mappings
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      validate-group-membership: false
+      status:
+        order: EXTERNAL_SERVICES_DOWN,DOWN,OUT_OF_SERVICE,UNKNOWN,UP
+      group:
+        application:
+          include: diskSpace,db,mongo
+          show-details: always
+          status:
+            order: DOWN,OUT_OF_SERVICE,UNKNOWN,UP
+        external:
+          include: externalServices
+          show-details: always
+          status:
+            order: DOWN,OUT_OF_SERVICE,UNKNOWN,UP,EXTERNAL_SERVICES
+
+# Importar información adicional
+spring:
+  config:
+    import: classpath:application-info.properties
+
+# Swagger en producción
+springdoc:
+  swagger-ui:
+    url: https://backend-production-e47e.up.railway.app/v3/api-docs
+    config-url: https://backend-production-e47e.up.railway.app/v3/api-docs/swagger-config
+
+# Detectar HTTPS detrás de proxy (muy importante en Railway)
+server:
+  forward-headers-strategy: framework
