@@ -25,7 +25,7 @@ public class HormonalCareBackendApplication {
                 @Override
                 public void addCorsMappings(@NonNull CorsRegistry registry) {
                     registry.addMapping("/**")
-                            .allowedOrigins("*") // Puedes reemplazar "*" por el dominio de tu frontend
+                            .allowedOrigins("https://backend-production-e47e.up.railway.app")
                             .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS")
                             .allowedHeaders("*");
                 }
